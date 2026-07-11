@@ -1,0 +1,7 @@
+baseURL = "https://go-tiktok.github.io/"
+languageCode = "en-us"
+title = "go-tiktok"
+disableKinds = ["taxonomy", "term", "RSS", "sitemap", "404"]
+
+[markup.goldmark.renderer]
+  unsafe = true

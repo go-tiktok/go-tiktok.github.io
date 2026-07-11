@@ -1,0 +1,3 @@
+repos:
+  - { name: "tiktok", kind: "client", ci: true, desc: "Pure-Go best-effort read client for public TikTok content." }
+  - { name: "brand", kind: "brand", ci: false, desc: "Logos, icons and social images for go-tiktok." }

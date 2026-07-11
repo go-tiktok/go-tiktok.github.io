@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Site.Title }} — Pure-Go best-effort read client for public TikTok content.</title>
+<meta name="description" content="Pure-Go best-effort read client for public TikTok content.">
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1b1f24; --muted: #57606a; --card: #f6f8fa;
+    --border: #d0d7de; --accent: #0079A8; --accent-fg: #ffffff;
+    --client: #0079A8; --brand: #9a6700; --warn: #9a6700; --warn-bg: #fff8e6; --warn-bd: #e6d38a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --card: #161b22;
+      --border: #30363d; --accent: #22CCE2; --accent-fg: #0d1117;
+      --client: #22CCE2; --brand: #d29922; --warn: #d29922; --warn-bg: #1c1a10; --warn-bd: #4a3f18;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --card: #161b22;
+    --border: #30363d; --accent: #22CCE2; --accent-fg: #0d1117;
+    --client: #22CCE2; --brand: #d29922; --warn: #d29922; --warn-bg: #1c1a10; --warn-bd: #4a3f18;
+  }
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 10;
+    font: inherit; font-size: .8rem; cursor: pointer; padding: 6px 12px;
+    color: var(--fg); background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 72px 0 32px; text-align: center; }
+  .logo { width: 88px; height: 88px; margin: 0 auto 18px; display: block; }
+  h1 { font-size: 2.6rem; margin: 0 0 .3em; letter-spacing: -.02em; }
+  .tagline { font-size: 1.2rem; color: var(--muted); margin: 0 auto; max-width: 680px; }
+  .pills { margin: 22px 0 0; }
+  .pill { display: inline-block; margin: 4px; padding: 3px 10px; font-size: .82rem;
+    color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 999px; }
+  .cta { margin: 30px 0 0; }
+  .btn { display: inline-block; padding: 10px 18px; margin: 4px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; border: 1px solid var(--border); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn.ghost { color: var(--fg); background: transparent; }
+  .lead { color: var(--fg); max-width: 800px; margin: 8px auto 0; text-align: center; }
+  .lead code { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px 20px 18px; margin: 28px auto 0; max-width: 800px; }
+  .panel h2 { font-size: 1.25rem; margin: 18px 0 .2em; }
+  .panel p { color: var(--muted); margin: 0 0 .6em; }
+  .panel pre { overflow-x: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 0; }
+  .panel code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86rem; }
+  .caveat { background: var(--warn-bg); border: 1px solid var(--warn-bd); border-radius: 12px; padding: 4px 20px 18px; margin: 28px auto 0; max-width: 800px; }
+  .caveat h2 { font-size: 1.2rem; margin: 18px 0 .2em; color: var(--warn); }
+  .caveat p { margin: 0 0 .6em; }
+  h2.section { text-align: center; margin: 44px 0 4px; font-size: 1.4rem; }
+  .sub { text-align: center; color: var(--muted); margin: 0 auto; max-width: 700px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 16px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; }
+  .card h3 { margin: 0 0 .35em; font-size: 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card h3 a { text-decoration: none; }
+  .card p { margin: 0 0 .8em; color: var(--fg); font-size: .95rem; }
+  .card .badges { margin-top: auto; }
+  .card .badges img { height: 20px; vertical-align: middle; }
+  .kind { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+  .kind.client { color: var(--client); }
+  .kind.brand { color: var(--brand); }
+  footer { color: var(--muted); text-align: center; padding: 40px 0 56px; font-size: .9rem; }
+  a { color: var(--accent); }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script>
+  (function(){var m=localStorage.getItem('theme');if(m&&m!=='system')document.documentElement.setAttribute('data-theme',m);})();
+</script>
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light, dark or system theme"><span id="theme-label">🖥️ System</span></button>
+  <header class="wrap">
+    <img class="logo" src="/img/logo.svg" alt="go-tiktok logo" width="88" height="88">
+    <h1>go-tiktok</h1>
+    <p class="tagline">Pure-Go <strong>best-effort</strong> read client for public <strong>TikTok</strong> content.</p>
+    <div class="pills">
+      <span class="pill">CGO_ENABLED=0</span>
+      <span class="pill">zero third-party deps</span>
+      <span class="pill">standard library only</span>
+      <span class="pill">best-effort · fragile</span>
+      <span class="pill">BSD-3-Clause</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://go-tiktok.github.io/docs/">Documentation</a>
+      <a class="btn ghost" href="https://github.com/go-tiktok/tiktok">GitHub</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="lead">A pure-Go, dependency-free, <strong>best-effort</strong> read client for public TikTok content, talking to TikTok's undocumented web JSON endpoints. The Go API is small and stable with an overridable base URL for network-free testing; the code builds correct requests and parses correct responses, but working end-to-end against live TikTok is not guaranteed.</p>
+
+    <div class="caveat">
+      <h2>⚠️ Best-effort — expect breakage</h2>
+      <p>TikTok does not publish or support a public web API. This client calls the same internal endpoints TikTok's own website uses, and TikTok actively defends them.</p>
+      <p>Requests often need a valid `msToken` and a signed parameter (`X-Bogus` / `_signature`) that this library does not compute; many reads additionally require a logged-in `sessionid` cookie. Expect anti-bot responses (403/429, or a 200 with an empty body) at any time.</p>
+    </div>
+    <div class="panel">
+      <h2>Usage</h2>
+      <p>Pure Go, standard library only. <code>go get github.com/go-tiktok/tiktok</code></p>
+      <pre><code>c := tiktok.New(
+	tiktok.WithMSToken("...msToken from a browser session..."),
+	tiktok.WithSessionID("...sessionid cookie for authed reads..."),
+)
+
+// secUid is TikTok's opaque per-user id; obtain it once from a profile
+// page's embedded JSON, then pass it here.
+feed, err := c.UserPosts(context.Background(), "MS4wLjABAAAA...", 20, "0")
+if err != nil {
+	panic(err)
+}
+for _, v := range feed.Videos {
+	fmt.Printf("%s  %d likes  %s\n", v.Permalink, v.Likes, v.Description)
+}
+fmt.Printf("cursor=%s hasMore=%v\n", feed.Cursor, feed.HasMore)</code></pre>
+    </div>
+
+    <h2 class="section">Repositories</h2>
+    <p class="sub">Everything that actually exists in the org today.</p>
+    <section class="grid">
+      {{ range site.Data.repos.repos }}
+      <article class="card">
+        <h3>
+          <a href="https://github.com/go-tiktok/{{ .name }}"><code>{{ .name }}</code></a>
+          <span class="kind {{ .kind }}">{{ .kind }}</span>
+        </h3>
+        <p>{{ .desc | safeHTML }}</p>
+        {{ if .ci }}
+        <div class="badges">
+          <a href="https://github.com/go-tiktok/{{ .name }}/actions/workflows/ci.yml"><img src="https://github.com/go-tiktok/{{ .name }}/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+          <a href="https://pkg.go.dev/github.com/go-tiktok/{{ .name }}"><img src="https://pkg.go.dev/badge/github.com/go-tiktok/{{ .name }}.svg" alt="Go Reference"></a>
+        </div>
+        {{ end }}
+      </article>
+      {{ end }}
+    </section>
+  </main>
+
+  <footer class="wrap">
+    BSD-3-Clause · <a href="https://github.com/go-tiktok">github.com/go-tiktok</a> ·
+    Branding from <a href="https://github.com/go-tiktok/brand">go-tiktok/brand</a>
+  </footer>
+  <script>
+  (function(){
+    var order=['system','light','dark'], root=document.documentElement;
+    var labels={system:'🖥️ System',light:'☀️ Light',dark:'🌙 Dark'};
+    function apply(m){ if(m==='system'){root.removeAttribute('data-theme');}else{root.setAttribute('data-theme',m);} localStorage.setItem('theme',m); var el=document.getElementById('theme-label'); if(el)el.textContent=labels[m]; }
+    var mode=localStorage.getItem('theme')||'system'; apply(mode);
+    var btn=document.getElementById('theme-toggle');
+    if(btn) btn.addEventListener('click',function(){ mode=order[(order.indexOf(mode)+1)%order.length]; apply(mode); });
+  })();
+  </script>
+</body>
+</html>
