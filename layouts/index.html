@@ -46,12 +46,10 @@
   <div class="hero"><div class="wrap">
     <div>
       <h1 class="head">go-tiktok</h1>
-      <p class="sub">Pure-Go <strong>best-effort</strong> read client for public <strong>TikTok</strong> content.</p>
-      <div class="cta">
-        <a class="btn btn-primary" href="https://go-tiktok.github.io/docs/">{{ partial "icons/book.html" . }}Documentation</a>
-        <a class="btn btn-ghost" href="https://github.com/go-tiktok/tiktok">{{ partial "icons/github.html" . }}GitHub</a>
-      </div>
-      <div class="trust">{{ if not (partial "mantra-on.html" $) }}<span class="pill">CGO_ENABLED=0</span>{{ end }}<span class="pill">zero third-party deps</span><span class="pill">standard library only</span><span class="pill">best-effort · fragile</span>{{ if not (partial "mantra-on.html" $) }}<span class="pill">BSD-3-Clause</span>{{ end }}</div>
+      <p class="sub">{{ if partial "mantra-on.html" . }}Go{{ else }}Pure-Go{{ end }} <strong>best-effort</strong> read client for public <strong>TikTok</strong> content.</p>
+      {{/* [[params.cta]] in hugo.toml: the kit renders the row */}}
+      {{ partial "cta.html" . }}
+      <div class="trust">{{ if not (partial "mantra-on.html" $) }}{{ if not (partial "mantra-on.html" $) }}<span class="pill">CGO_ENABLED=0</span>{{ end }}{{ end }}<span class="pill">zero third-party deps</span><span class="pill">standard library only</span><span class="pill">best-effort · fragile</span>{{ if not (partial "mantra-on.html" $) }}{{ if not (partial "mantra-on.html" $) }}<span class="pill">BSD-3-Clause</span>{{ end }}{{ end }}</div>
     </div>
     {{ partial "hero-carousel.html" . }}
   </div></div>
